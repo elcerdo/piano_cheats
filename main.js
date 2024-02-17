@@ -68,6 +68,20 @@ class Draw {
 const canvas = document.getElementById('piano_canvas');
 const draw = new Draw(canvas);
 
+const midi_status = document.getElementById('midi_status');
+
+navigator.permissions.query({ name: "midi", sysex: false }).then((result) => {
+    if (result.state === "granted") {
+        midi_status.innerText = "MIDI OK";
+        // Access granted.
+    } else if (result.state === "prompt") {
+        // Using API will prompt for permission
+        midi_status.innerText = "MIDI PROMPT";
+    }
+    midi_status.innerText = "MIDI DENIED";
+    // Permission was denied by user prompt or permission policy
+});
+
 const loop = () => {
     requestAnimationFrame(loop);
     draw.clear();
