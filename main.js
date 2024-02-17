@@ -86,6 +86,38 @@ let midi = null;
 navigator.requestMIDIAccess().then((midi_) => {
     midi_status.innerText = "MIDI READY";
     midi = midi_;
+
+    // list inputs
+    for (const entry of midi.inputs) {
+        const input = entry[1];
+        console.log(
+            `Input port [type:'${input.type}']` +
+            ` id:'${input.id}'` +
+            ` manufacturer:'${input.manufacturer}'` +
+            ` name:'${input.name}'` +
+            ` version:'${input.version}'`,
+        );
+    }
+
+    // list outputs
+    for (const entry of midi.outputs) {
+        const output = entry[1];
+        console.log(
+            `Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`,
+        );
+    }
+
+    const handle_message = (event) => {
+        let str = `MIDI timestamp ${event.timeStamp} [${event.data.length} bytes]: `;
+        for (const character of event.data) {
+            str += `0x${character.toString(16)} `;
+        }
+        console.log(str);
+    };
+
+    midi.inputs.forEach((entry) => {
+        entry.onmidimessage = handle_message;
+    });
 }, (message) => {
     midi_status.innerText = `MIDI FAILURE - ${message}`;
 });
