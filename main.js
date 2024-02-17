@@ -1,52 +1,62 @@
 var draw = {
-    back: (ctx, canvas, spc = 50, hh = 10) => {
+    clear: (ctx, canvas) => {
         ctx.fillStyle = 'yellow';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+    },
 
+    piano: (ctx, spc_xx = 10, spc_yy = 17, num_octaves = 3, hh = 10, spc_text = 2) => {
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
         ctx.font = '10px sans-serif';
 
-        let kk = 0;
-        for (const ll of "CDEFGABCDE") {
-            ctx.strokeStyle = 'black';
-            ctx.fillStyle = 'white';
-            ctx.fillRect(spc + kk * 3 * hh, spc, hh * 3, hh * 8);
-            ctx.strokeRect(spc + kk * 3 * hh, spc, hh * 3, hh * 8);
-            ctx.fillStyle = 'black';
-            ctx.fillText(ll, spc + kk * 3 * hh + 1.5 * hh, spc + hh * 9);
-            kk += 1;
+        { // white notes
+            ctx.textBaseline = 'top';
+            let cur_xx = spc_xx;
+            for (let kk = 0; kk < num_octaves; kk++)
+                for (const ll of "CDEFGAB") {
+                    ctx.fillStyle = 'white';
+                    ctx.strokeStyle = 'black';
+                    ctx.fillRect(cur_xx, spc_yy, hh * 3, hh * 8);
+                    ctx.strokeRect(cur_xx, spc_yy, hh * 3, hh * 8);
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(ll, cur_xx + 1.5 * hh, spc_yy + hh * 8 + spc_text);
+                    cur_xx += 3 * hh;
+                }
+        }
+
+        { // black keys
+            ctx.textBaseline = 'bottom';
+            const black_note = (kk, ll) => {
+                let cur_xx = spc_xx + (2 + 3 * kk) * hh;
+                for (let kk = 0; kk < num_octaves; kk++) {
+                    ctx.strokeStyle = 'black';
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(cur_xx, spc_yy, hh * 2, hh * 5);
+                    ctx.strokeRect(cur_xx, spc_yy, hh * 2, hh * 5);
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(ll, cur_xx + hh, spc_yy - spc_text);
+                    cur_xx += 3 * 7 * hh;
+                }
+            };
+            black_note(0, "Db");
+            black_note(1, "Eb");
+            black_note(3, "Gb");
+            black_note(4, "Ab");
+            black_note(5, "Bb");
         }
     }
 };
 
-
-// draw.debugInput = function (ctx, input) {
-//     ctx.fillStyle = 'white';
-//     ctx.textBaseline = 'top';
-//     ctx.font = '10px arial';
-//     ctx.fillText('input.pointerDown: ' + input.pointerDown, 10, 10);
-//     ctx.fillText('input.pos: ' + input.pos.x + ',' + input.pos.y, 10, 20);
-//     ctx.fillText('input.keys[87] (w): ' + input.keys[87], 10, 40);
-//     ctx.fillText('input.keys[65] (a): ' + input.keys[65], 10, 50);
-//     ctx.fillText('input.keys[83] (s): ' + input.keys[83], 10, 60);
-//     ctx.fillText('input.keys[68] (d): ' + input.keys[68], 10, 70);
-// };
-
 ///////
 
-var canvas = document.getElementById('piano_canvas');
-let ctx = canvas.getContext('2d');
+const canvas = document.getElementById('piano_canvas');
+const context = canvas.getContext('2d');
 
-// var input = controlMod(canvas);
-
-var loop = function () {
-
+const loop = () => {
     requestAnimationFrame(loop);
-
-    draw.back(ctx, canvas);
-    // draw.debugInput(ctx, input);
-
+    draw.clear(context, canvas)
+    draw.piano(context);
+    draw.piano(context, 10, 127, 2);
+    draw.piano(context, 10, 247, 4);
 };
 
 loop();
