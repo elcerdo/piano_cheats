@@ -7,6 +7,7 @@ class Draw {
         this.text_spacing = 2;
         this.grid_size = 10;
         this.row_spacing = 120;
+        this.note_to_colors = {};
     }
 
     clear() {
@@ -82,10 +83,8 @@ const draw = new Draw(canvas);
 // });
 
 const midi_status = document.getElementById('midi_status');
-let midi = null;
-navigator.requestMIDIAccess().then((midi_) => {
+navigator.requestMIDIAccess().then((midi) => {
     midi_status.innerText = "MIDI READY";
-    midi = midi_;
 
     // list inputs
     for (const entry of midi.inputs) {
@@ -107,8 +106,21 @@ navigator.requestMIDIAccess().then((midi_) => {
         );
     }
 
+    // register handle lambda
     const handle_message = (event) => {
-        let str = `MIDI timestamp ${event.timeStamp} [${event.data.length} bytes]: `;
+        if (event.data.length == 3 && event.data[0] == 0x80) { // note off
+            const note = event.data[1];
+            const velocity = event.data[2];
+            console.log(`NOTEOFF note ${note} vel ${velocity}`);
+            return;
+        }
+        if (event.data.length == 3 && event.data[0] == 0x90) { // note on
+            const note = event.data[1];
+            const velocity = event.data[2];
+            console.log(`NOTEON note ${note} vel ${velocity}`);
+            return;
+        }
+        let str = `!!! MIDI timestamp ${event.timeStamp} [${event.data.length} bytes]: `;
         for (const character of event.data) {
             str += `0x${character.toString(16)} `;
         }
