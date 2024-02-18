@@ -7,7 +7,7 @@ class Draw {
         this.text_spacing = 2;
         this.grid_size = 10;
         this.row_spacing = 120;
-        this.note_to_colors = {};
+        this.label_to_datas = {};
     }
 
     clear() {
@@ -15,7 +15,7 @@ class Draw {
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    piano(row_offset, num_octaves) {
+    piano(row_offset, num_octaves, include_next_note = true) {
         const spc_yy = this.origin_yy + row_offset * this.row_spacing;
         let ctx = this.context;
 
@@ -29,14 +29,33 @@ class Draw {
             let cur_xx = this.origin_xx;
             for (let kk = 0; kk < num_octaves; kk++)
                 for (const ll of "CDEFGAB") {
-                    ctx.fillStyle = 'white';
                     ctx.strokeStyle = 'black';
+                    ctx.fillStyle = 'white';
+                    if (ll in this.label_to_datas) {
+                        const data = this.label_to_datas[ll];
+                        ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
+                    }
                     ctx.fillRect(cur_xx, spc_yy, width, height);
                     ctx.strokeRect(cur_xx, spc_yy, width, height);
                     ctx.fillStyle = 'black';
                     ctx.fillText(ll, cur_xx + width / 2, spc_yy + height + this.text_spacing);
                     cur_xx += width;
                 }
+            if (include_next_note) {
+                const kk = num_octaves;
+                const ll = "C";
+                ctx.strokeStyle = 'black';
+                ctx.fillStyle = 'white';
+                if (ll in this.label_to_datas) {
+                    const data = this.label_to_datas[ll];
+                    ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
+                }
+                ctx.fillRect(cur_xx, spc_yy, width, height);
+                ctx.strokeRect(cur_xx, spc_yy, width, height);
+                ctx.fillStyle = 'black';
+                ctx.fillText(ll, cur_xx + width / 2, spc_yy + height + this.text_spacing);
+                cur_xx += width;
+            }
         }
 
         { // black keys
@@ -48,6 +67,10 @@ class Draw {
                 for (let kk = 0; kk < num_octaves; kk++) {
                     ctx.strokeStyle = 'black';
                     ctx.fillStyle = 'black';
+                    if (ll in this.label_to_datas) {
+                        const data = this.label_to_datas[ll];
+                        ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
+                    }
                     ctx.fillRect(cur_xx, spc_yy, width, height);
                     ctx.strokeRect(cur_xx, spc_yy, width, height);
                     ctx.fillStyle = 'black';
@@ -107,17 +130,27 @@ navigator.requestMIDIAccess().then((midi) => {
     }
 
     // register handle lambda
+    const note_labels = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
     const handle_message = (event) => {
         if (event.data.length == 3 && event.data[0] == 0x80) { // note off
             const note = event.data[1];
             const velocity = event.data[2];
-            console.log(`NOTEOFF note ${note} vel ${velocity}`);
+            const label = note_labels[note % note_labels.length];
+            console.log(`NOTEOFF note ${note} vel ${velocity} label ${label}`);
+            delete draw.label_to_datas[label];
             return;
         }
         if (event.data.length == 3 && event.data[0] == 0x90) { // note on
             const note = event.data[1];
             const velocity = event.data[2];
-            console.log(`NOTEON note ${note} vel ${velocity}`);
+            const label = note_labels[note % note_labels.length];
+            const octave = Math.floor(note / note_labels.length);
+            console.log(`NOTEON note ${note} vel ${velocity} label ${label} octave ${octave}`);
+            draw.label_to_datas[label] = {
+                other_color: 'green',
+                self_color: 'red',
+                octave: octave,
+            };
             return;
         }
         let str = `!!! MIDI timestamp ${event.timeStamp} [${event.data.length} bytes]: `;
@@ -138,8 +171,8 @@ const loop = () => {
     requestAnimationFrame(loop);
     draw.clear();
     draw.piano(0, 3);
-    draw.piano(1, 2);
-    draw.piano(2, 4);
+    draw.piano(1, 2, true);
+    draw.piano(2, 4, false);
 };
 
 loop();
