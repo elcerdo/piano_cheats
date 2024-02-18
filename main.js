@@ -8,10 +8,15 @@ class Draw {
         this.grid_size = 10;
         this.row_spacing = 120;
         this.label_to_datas = {};
+        this.dark_mode = "querySelector" in document &&
+            !!document.querySelector("meta[name=darkreader]");
+        this.text_color = this.dark_mode ? 'white' : 'black';
+        console.log(`dark_mode ${this.dark_mode} text_color ${this.text_color}`);
     }
 
     clear() {
-        this.context.fillStyle = 'yellow';
+        this.context.fillStyle = '#ff00ff00';
+        // this.context.fillStyle = 'yellow';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
@@ -37,7 +42,7 @@ class Draw {
                     }
                     ctx.fillRect(cur_xx, spc_yy, width, height);
                     ctx.strokeRect(cur_xx, spc_yy, width, height);
-                    ctx.fillStyle = 'black';
+                    ctx.fillStyle = this.text_color;
                     ctx.fillText(ll, cur_xx + width / 2, spc_yy + height + this.text_spacing);
                     cur_xx += width;
                 }
@@ -52,7 +57,7 @@ class Draw {
                 }
                 ctx.fillRect(cur_xx, spc_yy, width, height);
                 ctx.strokeRect(cur_xx, spc_yy, width, height);
-                ctx.fillStyle = 'black';
+                ctx.fillStyle = this.text_color;
                 ctx.fillText(ll, cur_xx + width / 2, spc_yy + height + this.text_spacing);
                 cur_xx += width;
             }
@@ -73,7 +78,7 @@ class Draw {
                     }
                     ctx.fillRect(cur_xx, spc_yy, width, height);
                     ctx.strokeRect(cur_xx, spc_yy, width, height);
-                    ctx.fillStyle = 'black';
+                    ctx.fillStyle = this.text_color;
                     ctx.fillText(ll, cur_xx + width / 2, spc_yy - this.text_spacing);
                     cur_xx += this.grid_size * 3 * 7;
                 }
@@ -147,7 +152,7 @@ navigator.requestMIDIAccess().then((midi) => {
             const octave = Math.floor(note / note_labels.length);
             console.log(`NOTEON note ${note} vel ${velocity} label ${label} octave ${octave}`);
             draw.label_to_datas[label] = {
-                other_color: 'green',
+                other_color: 'gray',
                 self_color: 'red',
                 octave: octave,
             };
