@@ -16,11 +16,11 @@ class Draw {
 
     clear() {
         this.context.fillStyle = '#ff00ff00';
-        // this.context.fillStyle = 'yellow';
+        // this.context.fillStyle = 'green';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    piano(row_offset, num_octaves, include_next_note = true) {
+    piano(row_offset, num_octaves, include_next_note = true, override_color = null) {
         const spc_yy = this.origin_yy + row_offset * this.row_spacing;
         let ctx = this.context;
 
@@ -39,6 +39,8 @@ class Draw {
                     if (ll in this.label_to_datas) {
                         const data = this.label_to_datas[ll];
                         ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
+                        if (override_color)
+                            ctx.fillStyle = override_color;
                     }
                     ctx.fillRect(cur_xx, spc_yy, width, height);
                     ctx.strokeRect(cur_xx, spc_yy, width, height);
@@ -54,6 +56,8 @@ class Draw {
                 if (ll in this.label_to_datas) {
                     const data = this.label_to_datas[ll];
                     ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
+                    if (override_color)
+                        ctx.fillStyle = override_color;
                 }
                 ctx.fillRect(cur_xx, spc_yy, width, height);
                 ctx.strokeRect(cur_xx, spc_yy, width, height);
@@ -75,6 +79,8 @@ class Draw {
                     if (ll in this.label_to_datas) {
                         const data = this.label_to_datas[ll];
                         ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
+                        if (override_color)
+                            ctx.fillStyle = override_color;
                     }
                     ctx.fillRect(cur_xx, spc_yy, width, height);
                     ctx.strokeRect(cur_xx, spc_yy, width, height);
@@ -152,10 +158,15 @@ navigator.requestMIDIAccess().then((midi) => {
             const octave = Math.floor(note / note_labels.length);
             console.log(`NOTEON note ${note} vel ${velocity} label ${label} octave ${octave}`);
             draw.label_to_datas[label] = {
-                other_color: 'gray',
-                self_color: 'red',
+                other_color: '#aaa',
+                self_color: '#f00',
                 octave: octave,
             };
+            return;
+        }
+        if (event.data.length == 3 && event.data[0] == 0xb0 && event.data[1] == 0x33 && event.data[2] == 0x7f) { // stop
+            console.log("STOP");
+            draw.label_to_datas = {};
             return;
         }
         let str = `!!! MIDI timestamp ${event.timeStamp} [${event.data.length} bytes]: `;
@@ -176,8 +187,7 @@ const loop = () => {
     requestAnimationFrame(loop);
     draw.clear();
     draw.piano(0, 3);
-    draw.piano(1, 2, true);
-    draw.piano(2, 4, false);
+    draw.piano(1, 1, true, '#ee0');
 };
 
 loop();
