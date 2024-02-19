@@ -12,12 +12,28 @@ class Draw {
             !!document.querySelector("meta[name=darkreader]");
         this.text_color = this.dark_mode ? 'white' : 'black';
         console.log(`dark_mode ${this.dark_mode} text_color ${this.text_color}`);
+        this.chord_to_names = {
+            CEG: "I",
+            CEbG: "i",
+            ADGb: "II",
+            ADF: "ii",
+            AbBE: "III",
+            BEG: "iii",
+            ACF: "IV",
+            AbCF: "iv",
+            BDG: "V",
+            BbDG: "v",
+            ADbE: "VI",
+            ACE: "vi",
+            BEbGb: "VII",
+            BDGb: "vii",
+        };
     }
 
     clear() {
-        this.context.fillStyle = '#ff00ff00';
+        // this.context.fillStyle = '#ffffff00';
         // this.context.fillStyle = 'green';
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     piano(row_offset, num_octaves, include_next_note = true, override_color = null) {
@@ -39,8 +55,7 @@ class Draw {
                     if (ll in this.label_to_datas) {
                         const data = this.label_to_datas[ll];
                         ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
-                        if (override_color)
-                            ctx.fillStyle = override_color;
+                        if (override_color) ctx.fillStyle = override_color;
                     }
                     ctx.fillRect(cur_xx, spc_yy, width, height);
                     ctx.strokeRect(cur_xx, spc_yy, width, height);
@@ -56,8 +71,7 @@ class Draw {
                 if (ll in this.label_to_datas) {
                     const data = this.label_to_datas[ll];
                     ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
-                    if (override_color)
-                        ctx.fillStyle = override_color;
+                    if (override_color) ctx.fillStyle = override_color;
                 }
                 ctx.fillRect(cur_xx, spc_yy, width, height);
                 ctx.strokeRect(cur_xx, spc_yy, width, height);
@@ -79,8 +93,7 @@ class Draw {
                     if (ll in this.label_to_datas) {
                         const data = this.label_to_datas[ll];
                         ctx.fillStyle = data.octave == kk + 4 ? data.self_color : data.other_color;
-                        if (override_color)
-                            ctx.fillStyle = override_color;
+                        if (override_color) ctx.fillStyle = override_color;
                     }
                     ctx.fillRect(cur_xx, spc_yy, width, height);
                     ctx.strokeRect(cur_xx, spc_yy, width, height);
@@ -95,6 +108,25 @@ class Draw {
             black_note(4, "Ab");
             black_note(5, "Bb");
         }
+    }
+
+    chord_label(xx, yy) {
+        let labels = [];
+        for (const ll in this.label_to_datas) labels.push(ll);
+        labels.sort();
+        let chord = '';
+        for (const ll of labels) chord += ll;
+        let ctx = this.context;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = this.text_color;
+        ctx.font = '40px sans-serif';
+        ctx.fillText(chord, xx, yy);
+        ctx.font = '60px sans-serif';
+        let chord_name = "??";
+        if (chord in this.chord_to_names)
+            chord_name = this.chord_to_names[chord];
+        ctx.fillText(chord_name, xx, yy + 40);
     }
 };
 
@@ -188,6 +220,7 @@ const loop = () => {
     draw.clear();
     draw.piano(0, 3);
     draw.piano(1, 1, true, '#ee0');
+    draw.chord_label(280, 127);
 };
 
 loop();
