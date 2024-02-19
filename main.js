@@ -123,7 +123,7 @@ class Draw {
         ctx.font = '40px sans-serif';
         ctx.fillText(chord, xx, yy);
         ctx.font = '60px sans-serif';
-        let chord_name = "??";
+        let chord_name = labels.length < 3 ? "" : "??";
         if (chord in this.chord_to_names)
             chord_name = this.chord_to_names[chord];
         ctx.fillText(chord_name, xx, yy + 40);
