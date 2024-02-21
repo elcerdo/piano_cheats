@@ -28,6 +28,7 @@ class Draw {
             BEbGb: "VII",
             BDGb: "vii",
         };
+        this.latest_valid_data = null;
     }
 
     clear() {
@@ -110,12 +111,25 @@ class Draw {
         }
     }
 
-    chord_label(xx, yy) {
+    update_latest_valid_chord() {
         let labels = [];
         for (const ll in this.label_to_datas) labels.push(ll);
         labels.sort();
         let chord = '';
         for (const ll of labels) chord += ll;
+        let chord_name = labels.length < 3 ? "" : "??";
+        if (chord in this.chord_to_names) {
+            chord_name = this.chord_to_names[chord];
+            this.latest_valid_data = {
+                name: chord_name,
+                chord: chord,
+            };
+        }
+        return [chord, chord_name];
+    }
+
+    chord_label(xx, yy) {
+        const [chord, chord_name] = this.update_latest_valid_chord();
         let ctx = this.context;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
@@ -123,9 +137,6 @@ class Draw {
         ctx.font = '40px sans-serif';
         ctx.fillText(chord, xx, yy);
         ctx.font = '60px sans-serif';
-        let chord_name = labels.length < 3 ? "" : "??";
-        if (chord in this.chord_to_names)
-            chord_name = this.chord_to_names[chord];
         ctx.fillText(chord_name, xx, yy + 40);
     }
 };
@@ -133,8 +144,9 @@ class Draw {
 ///////
 
 const canvas = document.getElementById('piano_canvas');
+const backlog_container = document.getElementById('backlog_container');
+const midi_status = document.getElementById('midi_status');
 const draw = new Draw(canvas);
-
 // const midi_status = document.getElementById('midi_status');
 // navigator.permissions.query({ name: "midi", sysex: false }).then((result) => {
 //     if (result.state === "granted") {
@@ -148,7 +160,6 @@ const draw = new Draw(canvas);
 //     // Permission was denied by user prompt or permission policy
 // });
 
-const midi_status = document.getElementById('midi_status');
 navigator.requestMIDIAccess().then((midi) => {
     midi_status.innerText = "MIDI READY";
 
@@ -181,6 +192,15 @@ navigator.requestMIDIAccess().then((midi) => {
             const label = note_labels[note % note_labels.length];
             console.log(`NOTEOFF note ${note} vel ${velocity} label ${label}`);
             delete draw.label_to_datas[label];
+            const is_empty = Object.keys(draw.label_to_datas).length == 0;
+            if (is_empty) {
+                console.log("banco", draw.latest_valid_data);
+                const node = document.createElement("div");
+                node.innerText = draw.latest_valid_data ? `${draw.latest_valid_data.name} ${draw.latest_valid_data.chord}` : '??';
+                backlog_container.prepend(node);
+                while (backlog_container.childElementCount > 8)
+                    backlog_container.removeChild(backlog_container.lastChild);
+            }
             return;
         }
         if (event.data.length == 3 && event.data[0] == 0x90) { // note on

@@ -1,20 +1,29 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>canvas keyboard</title>
-        <style>
-            body {
-                font-family: sans-serif;
-            }
-            .status_label {
-                padding-bottom: 1em;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>PIANO CHEATS</h1>
-        <div class="status_label" id="midi_status">MIDI STATUS</div>
-        <canvas id="piano_canvas" width="680" height="237"></canvas>
-        <script src="main.js"></script>
-    </body>
+
+<head>
+    <title>canvas keyboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        .status_label {
+            padding-bottom: 1em;
+        }
+
+        .scroll_container {
+            font-size: 40pt;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>PIANO CHEATS</h1>
+    <div class="status_label" id="midi_status">MIDI STATUS</div>
+    <canvas id="piano_canvas" width="680" height="237"></canvas>
+    <div class="scroll_container" id="backlog_container"></div>
+    <script src="main.js"></script>
+</body>
+
 </html>
