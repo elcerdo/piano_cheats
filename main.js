@@ -15,6 +15,7 @@ class Draw {
         this.chord_to_names = {
             CEG: "I",
             CEbG: "i",
+            AbDbF: "IIb",
             ADGb: "II",
             ADF: "ii",
             AbBE: "III",
@@ -124,7 +125,11 @@ class Draw {
                 name: chord_name,
                 chord: chord,
             };
-        }
+        } else if (labels.length >= 3)
+            this.latest_valid_data = {
+                name: "??",
+                chord: chord,
+            };
         return [chord, chord_name];
     }
 
